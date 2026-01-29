@@ -156,6 +156,7 @@ Temporary Items
 
 # Project specific
 output/
+logs/
 *.png
 *.jpg
 *.jpeg

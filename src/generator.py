@@ -167,12 +167,18 @@ class CrosswordGenerator:
             dict: Кроссворд в формате JSON
         """
         placed_words = grid.get_placed_words()
+        grid_array = grid.to_array()
 
         return {
-            'grid': grid.to_array(),
+            'grid': grid_array,
             'words': [pw.to_dict() for pw in placed_words],
             'difficulty': '',  # Будет заполнено в generate()
-            'category': ''     # Будет заполнено в generate()
+            'category': '',    # Будет заполнено в generate()
+            'metadata': {
+                'word_count': len(placed_words),
+                'grid_size': [len(grid_array), len(grid_array[0]) if grid_array else 0],
+                'fill_density': round(grid.get_fill_density(), 2)
+            }
         }
 
     def generate_batch(self, category: str, count: int = 50,
@@ -274,3 +280,37 @@ class CrosswordGenerator:
                         errors.append(f"Категория '{category}', слово #{i}: {error}")
 
         return (len(errors) == 0, errors)
+
+    def get_categories(self) -> List[str]:
+        """
+        Возвращает список названий категорий (алиас для get_available_categories)
+
+        Returns:
+            list: Названия категорий
+        """
+        return self.get_available_categories()
+
+    def get_categories_info(self) -> List[dict]:
+        """
+        Возвращает детальную информацию о категориях
+
+        Returns:
+            list: Список словарей с информацией о категориях
+        """
+        return [
+            {
+                'name': category,
+                'word_count': len(words),
+                'available': len(words) >= 50  # Минимум для генерации
+            }
+            for category, words in self.dictionary.items()
+        ]
+
+    def get_total_word_count(self) -> int:
+        """
+        Возвращает общее количество слов во всех категориях
+
+        Returns:
+            int: Общее количество слов
+        """
+        return sum(len(words) for words in self.dictionary.values())
