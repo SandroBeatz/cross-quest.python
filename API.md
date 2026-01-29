@@ -1,6 +1,8 @@
 # Crossword Generator API
 
-Base URL: `http://localhost:8080`
+**Production:** `https://cross-questpython-production.up.railway.app`
+
+**Local:** `http://localhost:8080`
 
 ---
 
@@ -25,7 +27,7 @@ POST /api/crossword
 **Пример запроса:**
 
 ```bash
-curl -X POST http://localhost:8080/api/crossword \
+curl -X POST https://cross-questpython-production.up.railway.app/api/crossword \
   -H "Content-Type: application/json" \
   -d '{
     "category": "Наука и технологии",
@@ -113,7 +115,7 @@ GET /api/categories
 **Пример запроса:**
 
 ```bash
-curl http://localhost:8080/api/categories
+curl https://cross-questpython-production.up.railway.app/api/categories
 ```
 
 **Успешный ответ (200):**
@@ -151,7 +153,7 @@ GET /api/health
 **Пример запроса:**
 
 ```bash
-curl http://localhost:8080/api/health
+curl https://cross-questpython-production.up.railway.app/api/health
 ```
 
 **Успешный ответ (200):**
@@ -213,7 +215,7 @@ API поддерживает CORS для всех origins (`*`).
 
 ---
 
-## Docker
+## Локальный запуск (Docker)
 
 ```bash
 # Запуск
@@ -223,4 +225,4 @@ docker-compose up -d
 docker-compose down
 ```
 
-API будет доступен на `http://localhost:8080`
+Локально API будет доступен на `http://localhost:8080`

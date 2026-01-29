@@ -28,9 +28,13 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Настройка CORS
+cors_origins = os.getenv('CORS_ORIGINS', '*')
+if cors_origins != '*':
+    cors_origins = [origin.strip() for origin in cors_origins.split(',')]
+
 CORS(app, resources={
     r"/api/*": {
-        "origins": os.getenv('CORS_ORIGINS', '*').split(','),
+        "origins": cors_origins,
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
