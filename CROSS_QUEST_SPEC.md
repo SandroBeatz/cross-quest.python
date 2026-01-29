@@ -9,7 +9,7 @@
 
 **Технологический стек:**
 - Frontend: React 19 + TypeScript + Vite
-- Стилизация: Tailwind CSS + Framer Motion (анимации)
+- Стилизация: Tailwind CSS + Framer Motion (анимации)
 - API: Google Gemini (генерация кроссвордов)
 - Хранение данных: localStorage
 
