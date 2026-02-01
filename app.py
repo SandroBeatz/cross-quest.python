@@ -47,6 +47,8 @@ app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1 MB
 DICTIONARY_PATH = os.getenv('DICTIONARY_PATH', 'data/dictionary.json')
 MAX_ATTEMPTS = int(os.getenv('MAX_GENERATION_ATTEMPTS', 50))
 MAX_EXCLUDED_IDS = 100  # Ограничение на размер excluded_ids
+MAX_EXCLUDED_WORDS = 500  # Ограничение на размер excluded_words
+MAX_GUESSED_WORDS = 1000  # Ограничение на общее количество guessed_words
 
 # Инициализация генератора
 generator = None
@@ -98,6 +100,7 @@ def get_crossword():
         category (str): Категория кроссворда
         difficulty (str, optional): Уровень сложности
         excluded_ids (list, optional): ID уже решённых кроссвордов
+        excluded_words (list, optional): Слова для исключения из генерации
     """
     if generator is None:
         return jsonify({
@@ -118,6 +121,7 @@ def get_crossword():
         category = data['category']
         difficulty = data.get('difficulty', 'medium')
         excluded_ids = data.get('excluded_ids', [])
+        excluded_words = data.get('excluded_words', [])
 
         # Валидация difficulty
         if difficulty not in ['easy', 'medium', 'hard']:
@@ -129,6 +133,15 @@ def get_crossword():
             logger.warning(f"excluded_ids truncated to {MAX_EXCLUDED_IDS} items")
 
         excluded_set = set(excluded_ids)
+
+        # Обработка excluded_words
+        if not isinstance(excluded_words, list):
+            excluded_words = []
+        if len(excluded_words) > MAX_EXCLUDED_WORDS:
+            excluded_words = excluded_words[-MAX_EXCLUDED_WORDS:]
+            logger.warning(f"excluded_words truncated to {MAX_EXCLUDED_WORDS} items")
+
+        excluded_words_set = {w.upper().strip() for w in excluded_words if isinstance(w, str)}
 
         # Проверка существования категории
         available_categories = generator.get_categories()
@@ -145,7 +158,7 @@ def get_crossword():
         crossword_id = None
 
         for attempt in range(MAX_ATTEMPTS):
-            crossword = generator.generate(category, difficulty)
+            crossword = generator.generate(category, difficulty, excluded_words=excluded_words_set)
 
             if crossword is None:
                 continue
@@ -211,9 +224,17 @@ def get_crossword():
         }), 500
 
 
-@app.route('/api/categories', methods=['GET'])
+@app.route('/api/categories', methods=['GET', 'POST'])
 def get_categories():
-    """Возвращает список доступных категорий"""
+    """
+    Возвращает список доступных категорий
+
+    GET: Базовая информация о категориях
+    POST: Информация с процентом отгаданных слов
+
+    Body (POST):
+        guessed_words (dict, optional): {category_name: [список отгаданных слов]}
+    """
     if generator is None:
         return jsonify({
             'error': 'Generator not initialized',
@@ -221,7 +242,28 @@ def get_categories():
         }), 500
 
     try:
-        categories_info = generator.get_categories_info()
+        guessed_words = {}
+
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            raw_guessed = data.get('guessed_words', {})
+
+            if isinstance(raw_guessed, dict):
+                total_words = sum(
+                    len(v) if isinstance(v, list) else 0
+                    for v in raw_guessed.values()
+                )
+                if total_words > MAX_GUESSED_WORDS:
+                    logger.warning(f"guessed_words exceeds limit ({total_words} > {MAX_GUESSED_WORDS})")
+
+                # Нормализация: {category: set(WORD.upper())}
+                for cat, words in raw_guessed.items():
+                    if isinstance(words, list):
+                        guessed_words[cat] = {
+                            w.upper().strip() for w in words if isinstance(w, str)
+                        }
+
+        categories_info = generator.get_categories_info_with_progress(guessed_words)
         return jsonify({
             'categories': categories_info,
             'total': len(categories_info)

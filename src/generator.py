@@ -40,7 +40,8 @@ class CrosswordGenerator:
         }
 
     def generate(self, category: str, difficulty: str = "medium",
-                 seed: Optional[int] = None) -> Optional[dict]:
+                 seed: Optional[int] = None,
+                 excluded_words: Optional[set] = None) -> Optional[dict]:
         """
         Генерирует один кроссворд
 
@@ -48,6 +49,7 @@ class CrosswordGenerator:
             category: Категория из словаря
             difficulty: "easy" | "medium" | "hard"
             seed: Опциональный seed для воспроизводимости
+            excluded_words: Множество слов для исключения (в верхнем регистре)
 
         Returns:
             dict: Кроссворд в JSON формате или None при ошибке
@@ -65,6 +67,10 @@ class CrosswordGenerator:
             raise ValueError(f"Категория '{category}' не найдена в словаре")
 
         words = self.dictionary[category]
+
+        # Исключаем использованные слова
+        if excluded_words:
+            words = [w for w in words if w['word'].upper() not in excluded_words]
 
         # Фильтруем по длине
         filtered_words = filter_words_by_length(
@@ -314,3 +320,35 @@ class CrosswordGenerator:
             int: Общее количество слов
         """
         return sum(len(words) for words in self.dictionary.values())
+
+    def get_categories_info_with_progress(self, guessed_words: Optional[Dict[str, set]] = None) -> List[dict]:
+        """
+        Возвращает информацию о категориях с процентом отгаданных слов
+
+        Args:
+            guessed_words: Словарь {category_name: set(отгаданные слова в UPPER)}
+
+        Returns:
+            list: [{name, word_count, available, guessed_count, guessed_percent}]
+        """
+        guessed_words = guessed_words or {}
+        result = []
+
+        for category, words in self.dictionary.items():
+            word_count = len(words)
+            all_words_in_category = {w['word'].upper() for w in words}
+
+            # Пересечение отгаданных и существующих в категории
+            category_guessed = guessed_words.get(category, set())
+            guessed_count = len(category_guessed & all_words_in_category)
+            guessed_percent = round((guessed_count / word_count * 100), 1) if word_count > 0 else 0
+
+            result.append({
+                'name': category,
+                'word_count': word_count,
+                'available': word_count >= 50,
+                'guessed_count': guessed_count,
+                'guessed_percent': guessed_percent
+            })
+
+        return result
