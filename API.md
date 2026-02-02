@@ -23,6 +23,7 @@ POST /api/crossword
 | `category` | string | да | Название категории |
 | `difficulty` | string | нет | Сложность: `easy`, `medium`, `hard`. По умолчанию `medium` |
 | `excluded_ids` | string[] | нет | ID уже решённых кроссвордов (макс. 100) |
+| `excluded_words` | string[] | нет | Слова для исключения из генерации (макс. 500) |
 
 **Пример запроса:**
 
@@ -32,7 +33,8 @@ curl -X POST https://cross-questpython-production.up.railway.app/api/crossword \
   -d '{
     "category": "Наука и технологии",
     "difficulty": "medium",
-    "excluded_ids": ["a1b2c3d4e5f67890"]
+    "excluded_ids": ["a1b2c3d4e5f67890"],
+    "excluded_words": ["АТОМ", "ЛАЗЕР", "РОБОТ"]
   }'
 ```
 
@@ -106,16 +108,36 @@ curl -X POST https://cross-questpython-production.up.railway.app/api/crossword \
 
 ### 2. Get Categories
 
-Возвращает список доступных категорий.
+Возвращает список доступных категорий с опциональным прогрессом.
 
 ```
 GET /api/categories
+POST /api/categories
 ```
 
-**Пример запроса:**
+**Request Body (только для POST):**
+
+| Поле | Тип | Обязательно | Описание |
+|------|-----|-------------|----------|
+| `guessed_words` | object | нет | Отгаданные слова по категориям: `{category: [слова]}` |
+
+**Пример GET запроса:**
 
 ```bash
 curl https://cross-questpython-production.up.railway.app/api/categories
+```
+
+**Пример POST запроса (с прогрессом):**
+
+```bash
+curl -X POST https://cross-questpython-production.up.railway.app/api/categories \
+  -H "Content-Type: application/json" \
+  -d '{
+    "guessed_words": {
+      "Наука и технологии": ["АТОМ", "ЛАЗЕР"],
+      "История": ["ЦАРЬ"]
+    }
+  }'
 ```
 
 **Успешный ответ (200):**
@@ -125,20 +147,36 @@ curl https://cross-questpython-production.up.railway.app/api/categories
   "categories": [
     {
       "name": "Наука и технологии",
-      "word_count": 150
+      "word_count": 150,
+      "available": true,
+      "guessed_count": 2,
+      "guessed_percent": 1.3
     },
     {
       "name": "История",
-      "word_count": 120
+      "word_count": 120,
+      "available": true,
+      "guessed_count": 1,
+      "guessed_percent": 0.8
     },
     {
       "name": "География",
-      "word_count": 95
+      "word_count": 95,
+      "available": true,
+      "guessed_count": 0,
+      "guessed_percent": 0
     }
   ],
   "total": 3
 }
 ```
+
+| Поле | Описание |
+|------|----------|
+| `word_count` | Общее количество слов в категории |
+| `available` | Доступна ли категория для генерации (≥50 слов) |
+| `guessed_count` | Количество отгаданных слов |
+| `guessed_percent` | Процент отгаданных слов |
 
 ---
 
