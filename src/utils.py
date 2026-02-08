@@ -231,17 +231,31 @@ def generate_filename(category: str, index: int, difficulty: str = 'medium') -> 
     """
     # Транслитерация категории для имени файла
     transliteration = {
-        'Наука и технологии': 'science',
+        'Животные': 'animals',
+        'Цвета и формы': 'colors_shapes',
+        'Еда': 'food',
+        'Транспорт': 'transport',
+        'Творчество': 'creativity',
+        'Наука': 'science',
         'История': 'history',
+        'География': 'geography',
+        'Литература': 'literature',
         'Искусство': 'art',
         'Спорт': 'sport',
-        'Литература': 'literature',
-        'Кино и сериалы': 'cinema',
         'Музыка': 'music',
-        'География': 'geography',
-        'Природа': 'nature',
+        'Кино и культура': 'cinema_culture',
+        'Технологии': 'technology',
+        'Экономика': 'economics',
+        'Право': 'law',
+        'Политика': 'politics',
         'Кулинария': 'cooking',
-        'Космос': 'space'
+        'Природа и садоводство': 'nature_gardening',
+        'Советское кино': 'soviet_cinema',
+        'Классическая литература': 'classic_literature',
+        'Классическая музыка': 'classic_music',
+        'История СССР/России': 'ussr_russia_history',
+        'Садоводство и огородничество': 'horticulture',
+        'Живопись и скульптура': 'painting_sculpture',
     }
 
     cat_name = transliteration.get(category, category.lower().replace(' ', '_'))

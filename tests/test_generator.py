@@ -37,11 +37,11 @@ class TestCrosswordGenerator:
         categories = generator.get_available_categories()
 
         assert len(categories) > 0
-        assert 'Наука и технологии' in categories
+        assert 'Наука' in categories
 
     def test_get_category_stats(self, generator):
         """Тест получения статистики категории"""
-        stats = generator.get_category_stats('Наука и технологии')
+        stats = generator.get_category_stats('Наука')
 
         assert stats['total_words'] > 0
         assert stats['min_length'] >= 2
@@ -50,7 +50,7 @@ class TestCrosswordGenerator:
     def test_generate_single(self, generator):
         """Тест генерации одного кроссворда"""
         crossword = generator.generate(
-            category='Наука и технологии',
+            category='Наука',
             difficulty='medium',
             seed=42  # Для воспроизводимости
         )
@@ -63,7 +63,7 @@ class TestCrosswordGenerator:
             assert 'category' in crossword
 
             assert crossword['difficulty'] == 'medium'
-            assert crossword['category'] == 'Наука и технологии'
+            assert crossword['category'] == 'Наука'
             assert len(crossword['words']) >= 8
 
     def test_generate_with_different_difficulties(self, generator):
@@ -72,7 +72,7 @@ class TestCrosswordGenerator:
 
         for diff in difficulties:
             crossword = generator.generate(
-                category='Наука и технологии',
+                category='Наука',
                 difficulty=diff,
                 seed=42
             )
@@ -88,7 +88,7 @@ class TestCrosswordGenerator:
     def test_generate_batch(self, generator):
         """Тест массовой генерации"""
         crosswords = generator.generate_batch(
-            category='Наука и технологии',
+            category='Наука',
             count=3,
             difficulty='medium'
         )
@@ -100,7 +100,7 @@ class TestCrosswordGenerator:
         """Тест статистики генерации"""
         # Генерируем несколько кроссвордов
         for _ in range(3):
-            generator.generate('Наука и технологии', seed=None)
+            generator.generate('Наука', seed=None)
 
         stats = generator.get_generation_stats()
 
@@ -150,7 +150,7 @@ class TestCrosswordGenerator:
     def test_words_on_grid(self, generator):
         """Тест соответствия слов и сетки"""
         crossword = generator.generate(
-            category='Наука и технологии',
+            category='Наука',
             difficulty='medium',
             seed=456
         )
@@ -178,7 +178,7 @@ class TestCrosswordGenerator:
     def test_generate_with_age_group_teens(self, generator):
         """Тест генерации с age_group=teens"""
         crossword = generator.generate(
-            category='Наука и технологии',
+            category='Наука',
             difficulty='easy',
             age_group='teens',
             seed=42
@@ -195,7 +195,7 @@ class TestCrosswordGenerator:
     def test_generate_without_age_group_backward_compat(self, generator):
         """Без age_group — метаданные v2 с age_adapted=False"""
         crossword = generator.generate(
-            category='Наука и технологии',
+            category='Наука',
             difficulty='medium',
             seed=42
         )
@@ -236,7 +236,7 @@ class TestCrosswordQuality:
 
     def test_no_duplicate_words(self, generator):
         """Тест отсутствия дублирующихся слов"""
-        crossword = generator.generate('Наука и технологии', seed=789)
+        crossword = generator.generate('Наука', seed=789)
 
         if crossword is None:
             pytest.skip("Не удалось сгенерировать кроссворд")
@@ -246,7 +246,7 @@ class TestCrosswordQuality:
 
     def test_word_lengths(self, generator):
         """Тест длины слов"""
-        crossword = generator.generate('Наука и технологии', difficulty='medium', seed=101)
+        crossword = generator.generate('Наука', difficulty='medium', seed=101)
 
         if crossword is None:
             pytest.skip("Не удалось сгенерировать кроссворд")
