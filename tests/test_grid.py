@@ -168,6 +168,40 @@ class TestGrid:
         assert '.' in string  # Пустые ячейки
 
 
+    def test_init_rectangular(self):
+        """Тест инициализации прямоугольной сетки"""
+        grid = Grid(height=4, width=6)
+        assert grid._height == 4
+        assert grid._width == 6
+        assert len(grid._grid) == 4
+        assert len(grid._grid[0]) == 6
+        assert grid.size == 6  # max(4, 6)
+
+    def test_init_square_with_height_width(self):
+        """Тест инициализации квадратной сетки через height/width"""
+        grid = Grid(height=5, width=5)
+        assert grid._height == 5
+        assert grid._width == 5
+
+    def test_place_word_on_small_grid(self):
+        """Тест размещения слова на маленькой сетке"""
+        grid = Grid(height=4, width=4)
+        success = grid.place_word('АТОМ', 'Частица', 'Подсказка', 1, 0, 'horizontal')
+        assert success is True
+
+        # Слово длиннее ширины — не помещается
+        assert grid.can_place_word('ДЛИННОЕ', 0, 0, 'horizontal') is False
+
+    def test_place_word_on_small_grid_vertical(self):
+        """Тест вертикального размещения на маленькой сетке"""
+        grid = Grid(height=4, width=4)
+        success = grid.place_word('АТО', 'Тест', 'Подсказка', 0, 0, 'vertical')
+        assert success is True
+
+        # Слово длиннее высоты — не помещается
+        assert grid.can_place_word('ПЯТЕРКА', 0, 0, 'vertical') is False
+
+
 class TestPlacedWord:
     """Тесты класса PlacedWord"""
 

@@ -15,13 +15,15 @@ class Validator:
     MAX_FILL_DENSITY = 0.7
 
     @staticmethod
-    def validate_crossword(grid: Grid, words: List[PlacedWord] = None) -> Tuple[bool, List[str]]:
+    def validate_crossword(grid: Grid, words: List[PlacedWord] = None,
+                           min_words: int = None) -> Tuple[bool, List[str]]:
         """
         Проверяет корректность кроссворда
 
         Args:
             grid: Объект Grid с размещёнными словами
             words: Опционально - список слов для проверки
+            min_words: Опционально - минимальное количество слов (для маленьких сеток)
 
         Returns:
             (is_valid: bool, errors: list)
@@ -32,8 +34,9 @@ class Validator:
             words = grid.get_placed_words()
 
         # Проверка минимального количества слов
-        if len(words) < Validator.MIN_WORDS:
-            errors.append(f"Недостаточно слов: {len(words)} < {Validator.MIN_WORDS}")
+        effective_min = min_words if min_words is not None else Validator.MIN_WORDS
+        if len(words) < effective_min:
+            errors.append(f"Недостаточно слов: {len(words)} < {effective_min}")
 
         # Проверка корректности всех пересечений
         intersection_errors = Validator.check_intersections(grid, words)

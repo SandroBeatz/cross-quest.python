@@ -39,8 +39,10 @@ class WordPlacer:
             return False
 
         # Выбираем самое длинное слово или случайное из топ-5
+        # Фильтруем: слово должно помещаться в ширину сетки
         sorted_words = sorted(self.word_list, key=lambda x: len(x['word']), reverse=True)
-        candidates = sorted_words[:5]
+        fitting_words = [w for w in sorted_words if len(w['word']) <= self.grid._width]
+        candidates = (fitting_words or sorted_words)[:5]
         word_entry = random.choice(candidates)
 
         word = word_entry['word'].upper()
@@ -48,8 +50,8 @@ class WordPlacer:
 
         if center:
             # Размещаем горизонтально в центре
-            row = self.grid.size // 2
-            col = (self.grid.size - length) // 2
+            row = self.grid._height // 2
+            col = (self.grid._width - length) // 2
         else:
             row = 0
             col = 0
@@ -57,7 +59,7 @@ class WordPlacer:
         # Проверяем что слово помещается
         if col < 0:
             col = 0
-        if col + length > self.grid.size:
+        if col + length > self.grid._width:
             return False
 
         success = self.grid.place_word(
@@ -153,12 +155,13 @@ class WordPlacer:
 
         # Сортируем по количеству пересечений (больше = лучше)
         # и по близости к центру
-        center = self.grid.size // 2
+        center_row = self.grid._height // 2
+        center_col = self.grid._width // 2
 
         def score(position):
             row, col, direction, intersection_count = position
             # Приоритет: количество пересечений и близость к центру
-            distance_to_center = abs(row - center) + abs(col - center)
+            distance_to_center = abs(row - center_row) + abs(col - center_col)
             return (intersection_count * 10) - distance_to_center
 
         sorted_positions = sorted(intersections, key=score, reverse=True)

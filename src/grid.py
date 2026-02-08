@@ -37,12 +37,17 @@ class Grid:
 
     EMPTY = ''
 
-    def __init__(self, size: int = 10):
+    def __init__(self, size: int = 10, height: int = None, width: int = None):
         """Создаёт пустую сетку заданного размера"""
-        self.size = size
-        self._height = size
-        self._width = size
-        self._grid: List[List[str]] = [[self.EMPTY for _ in range(size)] for _ in range(size)]
+        if height is not None and width is not None:
+            self._height = height
+            self._width = width
+            self.size = max(height, width)
+        else:
+            self._height = size
+            self._width = size
+            self.size = size
+        self._grid: List[List[str]] = [[self.EMPTY for _ in range(self._width)] for _ in range(self._height)]
         self._placed_words: List[PlacedWord] = []
 
     def get_cell(self, row: int, col: int) -> str:

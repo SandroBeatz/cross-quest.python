@@ -175,6 +175,56 @@ class TestCrosswordGenerator:
                     assert grid[row + i][col] == char, f"Буква {char} не найдена на позиции ({row + i}, {col})"
 
 
+    def test_generate_with_age_group_teens(self, generator):
+        """Тест генерации с age_group=teens"""
+        crossword = generator.generate(
+            category='Наука и технологии',
+            difficulty='easy',
+            age_group='teens',
+            seed=42
+        )
+
+        if crossword is not None:
+            assert crossword['metadata']['vocabulary_level'] == 'school'
+            assert crossword['metadata']['age_adapted'] is True
+            assert crossword['metadata']['max_word_length'] == 8  # min(teens=10, easy=8)
+            # Все слова <= 8 букв
+            for w in crossword['words']:
+                assert len(w['word']) <= 8
+
+    def test_generate_without_age_group_backward_compat(self, generator):
+        """Без age_group — метаданные v2 с age_adapted=False"""
+        crossword = generator.generate(
+            category='Наука и технологии',
+            difficulty='medium',
+            seed=42
+        )
+
+        if crossword is not None:
+            assert crossword['metadata']['age_adapted'] is False
+            assert 'vocabulary_level' in crossword['metadata']
+            assert 'max_word_length' in crossword['metadata']
+
+    def test_categories_info_with_v2_fields(self, generator):
+        """Категории содержат v2 поля"""
+        info = generator.get_categories_info_with_progress()
+        assert len(info) > 0
+        for cat in info:
+            assert 'icon' in cat
+            assert 'description' in cat
+            assert 'age_groups' in cat
+
+    def test_categories_info_filtered_by_age(self, generator):
+        """Фильтрация категорий по возрасту"""
+        all_cats = generator.get_categories_info_with_progress()
+        teens_cats = generator.get_categories_info_with_progress(age_group='teens')
+
+        # Teens-категории — подмножество всех
+        assert len(teens_cats) <= len(all_cats)
+        for cat in teens_cats:
+            assert 'teens' in cat['age_groups']
+
+
 class TestCrosswordQuality:
     """Тесты качества генерируемых кроссвордов"""
 

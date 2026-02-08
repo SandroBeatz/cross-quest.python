@@ -122,6 +122,8 @@ def get_crossword():
         difficulty = data.get('difficulty', 'medium')
         excluded_ids = data.get('excluded_ids', [])
         excluded_words = data.get('excluded_words', [])
+        age_group = data.get('age_group')
+        user_progress = data.get('user_progress')
 
         # Валидация difficulty
         if difficulty not in ['easy', 'medium', 'hard']:
@@ -158,7 +160,12 @@ def get_crossword():
         crossword_id = None
 
         for attempt in range(MAX_ATTEMPTS):
-            crossword = generator.generate(category, difficulty, excluded_words=excluded_words_set)
+            crossword = generator.generate(
+                category, difficulty,
+                excluded_words=excluded_words_set,
+                age_group=age_group,
+                user_progress=user_progress
+            )
 
             if crossword is None:
                 continue
@@ -243,10 +250,12 @@ def get_categories():
 
     try:
         guessed_words = {}
+        age_group = None
 
         if request.method == 'POST':
             data = request.get_json() or {}
             raw_guessed = data.get('guessed_words', {})
+            age_group = data.get('age_group')
 
             if isinstance(raw_guessed, dict):
                 total_words = sum(
@@ -263,7 +272,7 @@ def get_categories():
                             w.upper().strip() for w in words if isinstance(w, str)
                         }
 
-        categories_info = generator.get_categories_info_with_progress(guessed_words)
+        categories_info = generator.get_categories_info_with_progress(guessed_words, age_group=age_group)
         return jsonify({
             'categories': categories_info,
             'total': len(categories_info)
@@ -283,7 +292,7 @@ def health_check():
 
     health_status = {
         'status': 'ok' if generator is not None else 'error',
-        'version': '1.0.0',
+        'version': '2.0.0',
         'uptime_seconds': round(uptime, 2),
         'dictionary_loaded': generator is not None
     }
